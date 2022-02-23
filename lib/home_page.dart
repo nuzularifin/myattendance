@@ -26,7 +26,9 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  void addMarkers(LatLng pos) {
+  void addMarkers(LatLng pos) async {
+    String mapLocation =
+        await CoreFunctions().getAddress(pos.latitude, pos.longitude);
     setState(() {
       _myMarkerLocation = Marker(
           markerId: MarkerId('mylocation'),
@@ -36,16 +38,34 @@ class _HomePageState extends State<HomePage> {
           position: pos);
       myLatitude = pos.latitude;
       myLongitude = pos.longitude;
+      address = mapLocation;
+    });
+  }
+
+  dismissLoading() {
+    setState(() {
+      isFindingLocation = false;
+    });
+  }
+
+  showLoading() {
+    setState(() {
+      isFindingLocation = true;
     });
   }
 
   getCurrentMyLocation() async {
-    setState(() {
-      isFindingLocation = true;
-    });
-    Position position = await CoreFunctions().determinePosition();
-    print('my position lat = ${position.latitude}');
-    print('my position lng = ${position.longitude}');
+    late Position position;
+    try {
+      showLoading();
+      await CoreFunctions().determinePosition().then((value) {
+        position = value;
+      });
+    } catch (e) {
+      dismissLoading();
+      return BotToast.showText(text: '${e.toString()}');
+    }
+
     setState(() {
       myLatitude = position.latitude;
       myLongitude = position.longitude;
@@ -80,7 +100,7 @@ class _HomePageState extends State<HomePage> {
             height: double.infinity,
             width: double.infinity,
             child: GoogleMap(
-              initialCameraPosition: CameraPosition(
+              initialCameraPosition: const CameraPosition(
                 target: LatLng(-6.2601012, 106.7675102),
                 zoom: 14.4746,
               ),
@@ -95,19 +115,33 @@ class _HomePageState extends State<HomePage> {
           left: 0,
           right: 0,
           child: Card(
+            margin: EdgeInsets.all(12),
             child: Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.location_on_outlined),
-                  spacerVertical(8),
-                  const Text(
-                    'My Current Location',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 20,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'My Current Location',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
+                  spacerVertical(4),
+                  Text('Tap or Click on map to set your attendance',
+                      style:
+                          TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                   spacerVertical(12),
                   Text(
                     myLatitude != 0 && myLongitude != 0
@@ -115,16 +149,17 @@ class _HomePageState extends State<HomePage> {
                         : 'Empty Address',
                     textAlign: TextAlign.center,
                   ),
-                  spacerVertical(2),
+                  spacerVertical(8),
                   Text(
                     myLatitude != 0 && myLongitude != 0
                         ? '$myLatitude,  $myLongitude'
                         : '-',
                     textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12),
                   ),
                   spacerVertical(8),
                   !isFindingLocation
-                      ? Container(
+                      ? SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                               onPressed: () {
@@ -142,7 +177,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                   spacerVertical(8),
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                         onPressed: () {

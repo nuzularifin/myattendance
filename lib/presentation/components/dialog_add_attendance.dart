@@ -23,24 +23,30 @@ class _DialogAddAttendanceState extends State<DialogAddAttendance> {
 
   checkingDistance(BuildContext context) async {
     showLoading();
-    await CoreFunctions().determinePosition().then((position) {
-      double distance = Geolocator.distanceBetween(widget.masterLatitude,
-          widget.masterLongitude, position.latitude, position.longitude);
+    try {
+      await CoreFunctions().determinePosition().then((position) {
+        double distance = Geolocator.distanceBetween(widget.masterLatitude,
+            widget.masterLongitude, position.latitude, position.longitude);
+
+        if (distance > 50) {
+          BotToast.showText(
+              text:
+                  'Your location now more than 50 M, Please make sure your location under 50 M');
+          // print('Distance master with selected location => $distance');
+        } else {
+          // print('Distance master with selected location => $distance');
+          Attendance attendance = Attendance(
+              latitude: position.latitude,
+              longitude: position.longitude,
+              distance: distance.toStringAsFixed(2));
+          Navigator.pop(context, attendance);
+        }
+        dismissLoading();
+      });
+    } catch (e) {
       dismissLoading();
-      if (distance > 50) {
-        BotToast.showText(
-            text:
-                'Your location now more than 50 M, Please make sure your location under 50 M');
-        // print('Distance master with selected location => $distance');
-      } else {
-        // print('Distance master with selected location => $distance');
-        Attendance attendance = Attendance(
-            latitude: position.latitude,
-            longitude: position.longitude,
-            distance: distance.toStringAsFixed(2));
-        Navigator.pop(context, attendance);
-      }
-    });
+      return BotToast.showText(text: e.toString());
+    }
   }
 
   showLoading() {

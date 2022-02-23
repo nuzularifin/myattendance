@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_attendance/data/model/attendace.dart';
 import 'package:flutter_attendance/home_page.dart';
 import 'package:flutter_attendance/presentation/components/dialog_add_attendance.dart';
-import 'package:geolocator/geolocator.dart';
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage(
@@ -87,7 +86,7 @@ class _AttendancePageState extends State<AttendancePage> {
             ),
             spacerVertical(12),
             const Text(
-              'My Status',
+              'Status',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -117,7 +116,7 @@ class _AttendancePageState extends State<AttendancePage> {
                                   'Location : ${attendanceList[index].latitude} - ${attendanceList[index].longitude}'),
                               spacerVertical(2),
                               Text(
-                                  'Distance : ${attendanceList[index].distance} M'),
+                                  'Distance : ${attendanceList[index].distance} m'),
                               spacerVertical(6),
                               const Divider(),
                               spacerVertical(6),
